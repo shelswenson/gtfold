@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 /* Read data on a single base, filling baseData. Returns false if nothing could be read. Puts any pair
 ** index in pairIndex, or -1 if no pair.
 */
@@ -80,6 +81,63 @@ unsigned char ReadBase(FILE* filePtr, int index, BaseData* baseData, int* pairIn
 	    case 'U':
 		baseData->base = U;
 		break;
+
+
+	    case 'm':
+	    case 'M':
+		baseData->base = M;
+		break;
+		
+        case 'r':
+	    case 'R':
+		baseData->base = R;
+		break;
+		
+        case 's':
+	    case 'S':
+		baseData->base = S;
+		break;
+		
+		case 'v':
+	    case 'V':
+		baseData->base = V;
+		break;
+		
+        case 'w':
+	    case 'W':
+		baseData->base = W;
+		break;
+		
+        case 'y':
+	    case 'Y':
+		baseData->base = Y;
+		break;
+		
+	    case 'h':
+	    case 'H':
+		baseData->base = H;
+		break;
+		
+        case 'k':
+	    case 'K':
+		baseData->base = K;
+		break;
+		
+        case 'd':
+	    case 'D':
+		baseData->base = D;
+		break;
+		
+        case 'b':
+	    case 'B':
+		baseData->base = B;
+		break;
+		
+        case 'n':
+	    case 'N':
+		baseData->base = N;
+		break;
+
 
 	    default:
 		fprintf(stderr, "Bad base: index %d\n", index);
@@ -248,7 +306,7 @@ TreeNode* CreateFromFile(char* filename)
 
 void PrintTree(TreeNode* tree, int indent)
 {
-    char bases[9] = {0, 'A', 'C', 0, 'G', 0, 0, 0, 'U'};
+    char bases[16] = {0, 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N'};
     int i;
 
     PrintTabs(indent);
