@@ -302,6 +302,8 @@ TreeNode* CreateFromFile(char* filename)
     return result;
 }
 
+
+
 #define PrintTabs(indent) for (i = 0; i < indent; ++i) printf("   ");
 
 void PrintTree(TreeNode* tree, int indent)
@@ -331,17 +333,16 @@ void PrintTree(TreeNode* tree, int indent)
     }
 }
 
-int main(int argc, char* argv[])
+/* int main(int argc, char* argv[])
 {
-    if (argc < 2)
-    {
+	if (argc < 2)
+	{
 	fprintf(stderr, "USAGE: RNAScoring <filename>\n");
 	return 1;
-    }
+	}
 
-    TreeNode* tree = CreateFromFile(argv[1]);
-    PrintTree(tree, 0);
-
-    return 0;
+	TreeNode* tree = CreateFromFile(argv[1]);
+	PrintTree(tree, 0);
+	return 0;
 }
-
+ */

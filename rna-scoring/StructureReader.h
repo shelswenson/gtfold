@@ -2,8 +2,8 @@
     A class to hold an RNA structure.
 */
 
-#ifndef RNASTRUCTURE_H
-#define RNASTRUCTURE_H
+#ifndef STRUCTUREREADER_H
+#define STRUCTUREREADER_H
 
 typedef enum _Base
 {
@@ -43,5 +43,9 @@ typedef struct _TreeNode
     int numChildren; /* The number of children nodes. */
     struct _TreeNode** children; /* The child nodes. */
 } TreeNode;
+
+TreeNode* CreateFromFile(char* filename);
+void PrintTree(TreeNode* tree, int indent);
+
 
 #endif
