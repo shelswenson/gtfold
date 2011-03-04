@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 	
     TreeNode* tree = CreateFromFile(argv[1]);
     //PrintTree(tree, 0);
-	int tree_score = ScoreTree(tree);
+	int tree_score = ScoreNode(tree);
 	printf("Tree score is ");
 	printf("%d\n", tree_score);
     return 0;

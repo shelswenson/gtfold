@@ -22,6 +22,6 @@ typedef	struct _UnpairedRegion
 	//struct _Base**; /* The actual bases in the unpaired region listed in 5' to 3' order.*/
 } UnpairedRegion;
 
-int ScoreTree(TreeNode* root);
+int ScoreNode(TreeNode* node);
 
 #endif

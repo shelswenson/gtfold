@@ -30,59 +30,40 @@ int ScoreNode(TreeNode* node)
 		}
 	}
 	
-	if (numPairedChildren == 0)  // must be a hairpin
+	if (node->lowBase.index != 0) 
 	{
-		result += eH(NULL,NULL);
-		//printf("Found a Hairpin Loop\n");
-	}
-	else if (numPairedChildren == 1)  // must be stack, bulge, or internal
-	{
-		if (node->numChildren == 1)  // must be stack 
+		
+		if (numPairedChildren == 0)  // must be a hairpin
 		{
-			result += eS(NULL,NULL);
-			//printf("Found a Stacked Pair\n");
+			result += eH(NULL,NULL);
+			//printf("Found a Hairpin Loop\n");
 		}
-		else 
-		{  // must be bulge or internal 
-			result += eL(NULL,NULL,NULL,NULL);
+		else if (numPairedChildren == 1)  // must be stack, bulge, or internal
+		{
+			if (node->numChildren == 1)  // must be stack 
+			{
+				result += eS(NULL,NULL);
+				//printf("Found a Stacked Pair\n");
+			}
+			else 
+			{  // must be bulge or internal 
+				result += eL(NULL,NULL,NULL,NULL);
 			 
-			//printf("Found a Bulge or Inernal Loop\n");
+				//printf("Found a Bulge or Inernal Loop\n");
+			}
+		}
+		else  // must be a multi-loop
+		{	
+			result += eM(NULL,NULL);
+			//printf("Found a Mulit-Loop\n");
 		}
 	}
-	else  // must be a multi-loop
-	{	
-		result += eM(NULL,NULL);
-		//printf("Found a Mulit-Loop\n");
+	else { // must be external
+		result += eE(NULL,NULL);
+		//printf("Found a External Loop\n");
 	}
-	
+
 	return result;
 }
 
-
-
-//Shel: Function for scoring a tree from the root
-int ScoreTree(TreeNode* root)
-{
-	int result;
-	result = 0;
-	int *pairedChildren;
-	pairedChildren = NULL;
-	int numPairedChildren = 0;
-	int i;
-	for (i = 0 ; i < root->numChildren ; i++)
-	{
-		printf("index of root's lowBase is %d", root->lowBase.index);
-		if ((root->children[i])->isPair) 
-		{
-			result += ScoreNode(root->children[i]);
-			numPairedChildren += 1;
-			pairedChildren = realloc(pairedChildren, sizeof(int) * numPairedChildren);
-			pairedChildren[numPairedChildren - 1] = i;
-		}
-	}
-	//printf("Root has %d paired children", numPairedChildren);
-	result += eE(NULL,NULL);
-	
-	return result;
-}
 
