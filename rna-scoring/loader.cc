@@ -26,10 +26,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include "loader.h"
-#include "main-c.h"
 
 #define xstr(s) str(s)
 #define str(s) #s
+
+#define fourBaseIndex(a, b, c, d) (((a) << 6) + ((b) << 4) + ((c) << 2) + (d))
 
 
 using namespace std;

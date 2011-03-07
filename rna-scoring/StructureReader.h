@@ -47,5 +47,4 @@ typedef struct _TreeNode
 TreeNode* CreateFromFile(char* filename);
 void PrintTree(TreeNode* tree, int indent);
 
-
 #endif

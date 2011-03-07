@@ -333,16 +333,17 @@ void PrintTree(TreeNode* tree, int indent)
     }
 }
 
-/* int main(int argc, char* argv[])
-{
-	if (argc < 2)
-	{
-	fprintf(stderr, "USAGE: RNAScoring <filename>\n");
-	return 1;
-	}
+// int main(int argc, char* argv[])
+//{
+//	if (argc < 2)
+//	{
+//	fprintf(stderr, "USAGE: RNAScoring <filename>\n");
+//	return 1;
+//	}
+//
+//	TreeNode* tree = CreateFromFile(argv[1]);
+//	PrintTree(tree, 0);
+//	return 0;
+//}
 
-	TreeNode* tree = CreateFromFile(argv[1]);
-	PrintTree(tree, 0);
-	return 0;
-}
- */
+ 
