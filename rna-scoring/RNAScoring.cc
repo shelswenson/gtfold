@@ -26,16 +26,11 @@ int main(int argc, char* argv[])
 	
     TreeNode* tree = CreateFromFile(argv[1]);
     PrintTree(tree, 0);
-	nndb_constants* param = populate("./data", 0);
+	nndb_constants* param = populate("data/Turner99", 1);
 	
 	int tree_score = ScoreNode(tree);
 	printf("Tree score is ");
 	printf("%d\n", tree_score);
-	
-    int user_id;
-    printf ("Enter a number: %d\n", user_id);
-
-    scanf ("%d", &user_id);
 
     return 0;
 }

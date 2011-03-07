@@ -35,15 +35,25 @@ int ScoreNode(TreeNode* node)
 		
 		if (numPairedChildren == 0)  // must be a hairpin
 		{
-			result += eH(NULL,NULL);
+			
+            result += eH(NULL,NULL);
 			//printf("Found a Hairpin Loop\n");
 		}
 		else if (numPairedChildren == 1)  // must be stack, bulge, or internal
 		{
 			if (node->numChildren == 1)  // must be stack 
 			{
-				result += eS(NULL,NULL);
-				//printf("Found a Stacked Pair\n");
+            
+            printf("Found a Stacked Pair\n");
+
+				BasePair *first;
+				BasePair *second;
+				first = node;
+				second = (node->children[0]);
+				
+             //result += eS(NULL,NULL);
+            result += eS(first,second);
+				
 			}
 			else 
 			{  // must be bulge or internal 

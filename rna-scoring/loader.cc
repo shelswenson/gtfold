@@ -61,8 +61,6 @@ nndb_constants * populate(const char *userdatadir,bool userdatalogic) {
 		EN_DATADIR += "/";
 	}
 
-	
-
 	cout << EN_DATADIR << endl;
 
 	initMiscloopValues("miscloop.dat", ret_pointer);
@@ -285,7 +283,7 @@ int initMiscloopValues(string fileName, nndb_constants * container) {
 	ifstream cf; //cf = current file
 
 	fileName = EN_DATADIR + fileName;
-#if 0
+#if 1
 	cout << "Getting miscloop values from " << fileName << endl;
 #endif
 	cf.open(fileName.c_str(), ios::in);
