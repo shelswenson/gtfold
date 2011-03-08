@@ -27,6 +27,25 @@ int *decomposeToNucleotideBits(int n, int* array){
    return array;
 } 
 
+int maskToGTfoldBases(int value){
+    //ZS - this function uses bitmasking to efficiently convert "scoring" bases 
+    //to "GTfold" bases that can be used in "fourBaseIndex"
+    //GTfold bases: A=0, C=1, G=2, U=3
+    //Scoring bases: A=1, C=2, G=4, U=8
+    if(value==1){
+       return 0;}
+    else if(value==2){
+       return 1;}
+    else if(value==4){
+       return 2;}
+    else if(value==8){
+       return 3;}
+    else{
+         printf("ERROR! Base cannot be masked to GTfold type: %i", value);
+         return -1;
+    }
+}
+
 int sum(int* array){
     //finds the sum of elements in an array of size 4.
     int result = 0;
@@ -95,13 +114,14 @@ int eS(BasePair* exteriorPair, BasePair* interiorPair, nndb_constants* param){
         return 0;
     }
     
-    int score = param->stack[fourBaseIndex(interiorPair->lowBase.base, interiorPair->highBase.base,
-          exteriorPair->lowBase.base, exteriorPair->highBase.base)];
-    printf("Adding score for stacking pairs: %c-%c, %c-%c; score is %d\n",
-        bases[exteriorPair->highBase.base], bases[exteriorPair->lowBase.base],
-        bases[interiorPair->highBase.base], bases[interiorPair->lowBase.base], score);
-    
-    //Divide by the number of combinations we have gone through to get the average.
+    int score = param->stack[fourBaseIndex(maskToGTfoldBases(exteriorPair->lowBase.base), 
+              maskToGTfoldBases(exteriorPair->highBase.base),
+              maskToGTfoldBases(interiorPair->lowBase.base), 
+              maskToGTfoldBases(interiorPair->highBase.base))];
+    printf("Score for stacking pairs %c-%c, %c-%c: %d\n",
+        bases[exteriorPair->lowBase.base], bases[exteriorPair->highBase.base],
+        bases[interiorPair->lowBase.base], bases[interiorPair->highBase.base], score);
+
     return score;
 }
 

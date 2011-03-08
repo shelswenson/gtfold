@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
      for(two = 0; two<4; two++){
         for(three=0; three<4; three++){
            for(four=0; four<4; four++){
-              score = param->stack[fourBaseIndex((int)pow(2,one), (int)pow(2,two), (int)pow(2,four), (int)pow(2,three))];
+              score = param->stack[fourBaseIndex(one, two, three, four)];
                printf("%c-%c %c-%c: %d \n", bases[(int)pow(2,one)], bases[(int)pow(2,two)], 
                bases[(int)pow(2,three)], bases[(int)pow(2,four)], score);       
            }
