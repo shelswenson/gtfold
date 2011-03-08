@@ -9,8 +9,7 @@
 
 
 //Shel: Function for scoring a node (recursive)
-int ScoreNode(TreeNode* node)
-{
+int ScoreNode(TreeNode* node, nndb_constants* param){
 	int result;
 	result = 0;
 	int *pairedChildren;
@@ -19,11 +18,11 @@ int ScoreNode(TreeNode* node)
 	numPairedChildren = 0;
 	int i;
 	
-	for (i = 0 ; i < node->numChildren ; i++) // find location and number of paired children and add scores of associated loops
-	{
-		if ((node->children[i])->isPair) 
-		{
-			result += ScoreNode(node->children[i]);
+	for (i = 0 ; i < node->numChildren ; i++){ 
+       // find location and number of paired children 
+       //and add scores of associated loops
+		if ((node->children[i])->isPair) {
+			result += ScoreNode(node->children[i], param);
 			numPairedChildren += 1;
 			pairedChildren = realloc(pairedChildren, sizeof(int) * numPairedChildren);
 			pairedChildren[numPairedChildren - 1] = i;
@@ -44,7 +43,7 @@ int ScoreNode(TreeNode* node)
 			if (node->numChildren == 1)  // must be stack 
 			{
             
-            printf("Found a Stacked Pair\n");
+            //printf("Found a Stacked Pair\n");
 
 				BasePair *first;
 				BasePair *second;
@@ -52,7 +51,7 @@ int ScoreNode(TreeNode* node)
 				second = (node->children[0]);
 				
              //result += eS(NULL,NULL);
-            result += eS(first,second);
+            result += eS(first,second, param);
 				
 			}
 			else 

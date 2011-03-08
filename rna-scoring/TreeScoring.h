@@ -5,6 +5,7 @@
 #ifndef TREESCORING_H
 #define TREESCORING_H
 #include "StructureReader.h" 
+#include "data.h"
 
 /* Nucleotides in a base pair */
 typedef	struct _BasePair
@@ -22,6 +23,6 @@ typedef	struct _UnpairedRegion
 	//struct _Base**; /* The actual bases in the unpaired region listed in 5' to 3' order.*/
 } UnpairedRegion;
 
-int ScoreNode(TreeNode* node);
+int ScoreNode(TreeNode* node, nndb_constants* param);
 
 #endif
