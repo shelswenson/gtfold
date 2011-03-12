@@ -336,7 +336,7 @@ ResultBundle* CreateFromFile(char* filename)
 	 int value = readLength(filePtr_second); 
 	 printf("Length of sequence: %d\n", value);
 
-	 int RNA[value+1]; //ZS: In GTfold, RNA[1] is the first base, so complying with that here
+	 int *RNA = (int *)malloc(sizeof(int)*value+1); //ZS: In GTfold, RNA[1] is the first base, so complying with that here
  
     TreeNode* result = (TreeNode*)malloc(sizeof(TreeNode));
     result->numChildren = 0;
