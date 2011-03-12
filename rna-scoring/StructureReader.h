@@ -28,15 +28,13 @@ typedef enum _Base
 } Base;
 
 /* Data about a single base */
-typedef struct _BaseData
-{
+typedef struct _BaseData{
     int index;
     Base base;
 } BaseData;
 
 /* The graph node data structure */
-typedef struct _TreeNode
-{
+typedef struct _TreeNode{
     BaseData lowBase; /* The low base. */
     BaseData highBase; /* The high base, if a pair. */
     unsigned char isPair; /* Non-zero if this is a pair. */
@@ -44,7 +42,14 @@ typedef struct _TreeNode
     struct _TreeNode** children; /* The child nodes. */
 } TreeNode;
 
-TreeNode* CreateFromFile(char* filename);
+
+typedef struct _ResultBundle{
+    int length; //stores the length of the sequence
+    TreeNode* treenode; //stores the tree structure of the RNA
+    int* RNA_seq;  //stores the full RNA sequence
+} ResultBundle; 
+
+ResultBundle* CreateFromFile(char* filename);
 void PrintTree(TreeNode* tree, int indent);
 
 #endif

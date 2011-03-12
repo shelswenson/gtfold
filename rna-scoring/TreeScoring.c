@@ -9,7 +9,7 @@
 
 
 //Shel: Function for scoring a node (recursive)
-int ScoreNode(TreeNode* node, nndb_constants* param){
+int ScoreNode(TreeNode* node, int RNA[], nndb_constants* param){
 	int result;
 	result = 0;
 	int *pairedChildren;
@@ -22,7 +22,7 @@ int ScoreNode(TreeNode* node, nndb_constants* param){
        // find location and number of paired children 
        //and add scores of associated loops
 		if ((node->children[i])->isPair) {
-			result += ScoreNode(node->children[i], param);
+			result += ScoreNode(node->children[i], RNA, param);
 			numPairedChildren += 1;
 			pairedChildren = realloc(pairedChildren, sizeof(int) * numPairedChildren);
 			pairedChildren[numPairedChildren - 1] = i;
@@ -35,40 +35,38 @@ int ScoreNode(TreeNode* node, nndb_constants* param){
 		if (numPairedChildren == 0)  // must be a hairpin
 		{
 			
-            result += eH(NULL,NULL);
-			//printf("Found a Hairpin Loop\n");
+          //result += eH(0,0, RNA, param);
+          //result += 0;
+
+			printf("Found a Hairpin Loop\n");
 		}
 		else if (numPairedChildren == 1)  // must be stack, bulge, or internal
 		{
 			if (node->numChildren == 1)  // must be stack 
 			{
-            
-            //printf("Found a Stacked Pair\n");
-
-				BasePair *first;
-				BasePair *second;
-				first = node;
-				second = (node->children[0]);
-				
-             //result += eS(NULL,NULL);
-            result += eS(first,second, param);
+			 	printf("Found a stacked pair:");
+			 	printf("%d %d\n", node->lowBase.index, node->highBase.index);
+   ///       	int energy = eS(node->lowBase.index, node->highBase.index, *RNA, param);
+			   int energy = 0;
+	       	result += energy;
+//            printf("Found a Stacked Pair with energy\n");
 				
 			}
 			else 
 			{  // must be bulge or internal 
-				result += eL(NULL,NULL,NULL,NULL);
+			//	result += eL(NULL,NULL,NULL,NULL);
 			 
 				//printf("Found a Bulge or Inernal Loop\n");
 			}
 		}
 		else  // must be a multi-loop
 		{	
-			result += eM(NULL,NULL);
+		//	result += eM(NULL,NULL);
 			//printf("Found a Mulit-Loop\n");
 		}
 	}
 	else { // must be external
-		result += eE(NULL,NULL);
+	//	result += eE(NULL,NULL);
 		//printf("Found a External Loop\n");
 	}
 

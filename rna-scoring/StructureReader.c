@@ -6,6 +6,62 @@
 #include <string.h>
 
 
+/*ZS: Converts to GT fold base code*/
+		
+int convertToGTfoldBase(int value){
+	 if(value==1){
+       return 0; 
+	 }
+	 else if(value==2){
+		 return 1;
+	 }
+	 else if(value==4){
+		 return 2;
+	 }
+	 else if(value==8){
+		 return 3;
+	 }
+	 else{
+       char bases[16] = {0, 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N'};
+		 fprintf(stderr, "Ambiguous base: %c\n", bases[value]);
+	 	 return -1;
+    }
+}
+
+/*ZS: Reads the length of the sequence from the .ct file. This is the FIRST
+number that occurs in the file at all.*/
+unsigned char readLength(FILE* filePtr){
+ while (1) /* Read as much as we have to to get the next base */
+    {
+  
+   int junk = 0;
+	int nextChar = 0;
+
+	/* Check for a number. If not, ignore the line, or maybe the file is done. */
+	int numRead = fscanf(filePtr, "%d", &junk);
+	if (numRead != 1){
+	    /* Ignore this line, if it exists */
+	    nextChar = fgetc(filePtr);
+	    while (1)
+	    {
+		if (nextChar == EOF || nextChar == '\n')
+		    break;
+	    	nextChar = fgetc(filePtr);
+	    }
+	    /* If we are out of input, just return NULL */
+	    if (nextChar == EOF)
+	    {
+		return 0;
+	    }
+	    /* Try the next line. */
+	    continue;
+	}
+	/* Close file and Return the number */
+		fclose(filePtr);
+		return junk;
+    }
+}
+
 /* Read data on a single base, filling baseData. Returns false if nothing could be read. Puts any pair
 ** index in pairIndex, or -1 if no pair.
 */
@@ -204,7 +260,8 @@ TreeNode* CreateNode(
     FILE* filePtr,
     unsigned char isBPSEQ,
     BaseData* returnData,
-    int* returnPair)
+    int* returnPair,
+	 int* RNA)
 {
     if (!ReadBase(filePtr, lowIndex, returnData, returnPair, isBPSEQ))
     {
@@ -216,7 +273,8 @@ TreeNode* CreateNode(
     result->children = NULL;
     result->lowBase.index = returnData->index;
     result->lowBase.base = returnData->base;
-
+	 RNA[returnData->index] = convertToGTfoldBase(returnData->base);
+	 
     if (!(*returnPair))
     {
 	result->isPair = 0;
@@ -230,7 +288,7 @@ TreeNode* CreateNode(
     TreeNode* child;
     do
     {
-	child = CreateNode(*nextIndex, nextIndex, filePtr, isBPSEQ, returnData, returnPair);
+	child = CreateNode(*nextIndex, nextIndex, filePtr, isBPSEQ, returnData, returnPair, &RNA[0]);
 	result->numChildren += 1;
 	result->children = (TreeNode**)realloc(result->children, sizeof(TreeNode*) * result->numChildren);
 	result->children[result->numChildren - 1] = child;
@@ -240,13 +298,14 @@ TreeNode* CreateNode(
     {
 	ReadBase(filePtr, *nextIndex, returnData, returnPair, isBPSEQ);
 	result->highBase.base = returnData->base;
+	RNA[result->highBase.index] = convertToGTfoldBase(returnData->base);
 	*nextIndex += 1;
     }
 
     return result;
 }
 
-TreeNode* CreateFromFile(char* filename)
+ResultBundle* CreateFromFile(char* filename)
 {
     // Figure out what kind of file we have and try to load it.
     char* extension = strrchr(filename, '.');
@@ -264,14 +323,21 @@ TreeNode* CreateFromFile(char* filename)
 	fprintf(stderr, "Unknown file type: %s\n", filename);
 	return NULL;
     }
-
     FILE* filePtr = fopen(filename, "r");
     if (!filePtr)
-    {
-	fprintf(stderr, "Unable to open file: %s\n", filename);
-	return NULL;
-    }
+    {fprintf(stderr, "Unable to open file: %s\n", filename);
+	  return NULL;}
 
+	 //ZS: Open a second copy briefly, which we only use to read the length 
+	 //of the sequence 
+	 //(I know it's an ugly solution but I don't want to mess up Steven's code
+	 //and I don't really understand it) 
+	 FILE* filePtr_second = fopen(filename, "r");
+	 int value = readLength(filePtr_second); 
+	 printf("Length of sequence: %d\n", value);
+
+	 int RNA[value+1]; //ZS: In GTfold, RNA[1] is the first base, so complying with that here
+ 
     TreeNode* result = (TreeNode*)malloc(sizeof(TreeNode));
     result->numChildren = 0;
     result->children = NULL;
@@ -283,13 +349,18 @@ TreeNode* CreateFromFile(char* filename)
     int nextIndex = 1;
     int pairIndex;
     BaseData bData;
-    TreeNode* child = CreateNode(nextIndex, &nextIndex, filePtr, isBPSEQ, &bData, &pairIndex);
+    
+    ResultBundle* resultBundle = (ResultBundle*)malloc(sizeof(ResultBundle));
+    resultBundle->treenode = result;
+    
+    TreeNode* child = CreateNode(nextIndex, &nextIndex, filePtr, isBPSEQ, &bData, &pairIndex, &RNA[0]);
+    
     while (child)
     {
 	result->numChildren += 1;
 	result->children = (TreeNode**)realloc(result->children, sizeof(TreeNode*) * result->numChildren);
 	result->children[result->numChildren - 1] = child;
-	child = CreateNode(nextIndex, &nextIndex, filePtr, isBPSEQ, &bData, &pairIndex);
+	child = CreateNode(nextIndex, &nextIndex, filePtr, isBPSEQ, &bData, &pairIndex, &RNA[0]);
     }
 
     fclose(filePtr);
@@ -298,8 +369,20 @@ TreeNode* CreateFromFile(char* filename)
     {
 	fprintf(stderr, "Empty or malformed file: %s\n", filename);
     }
-
-    return result;
+    
+   resultBundle->RNA_seq = &RNA[0];
+	resultBundle->length = value;
+   //print out the whole RNA array. 
+	int cnt;
+	char basecode[4] = {'A','C','G','U'};
+	printf("Size %d\n", value);
+	for(cnt = 1; cnt <= value; cnt++){
+       printf("%d: %d=%c\n", cnt, RNA[cnt], basecode[RNA[cnt]]);
+       printf("%d: %d=%c\n", cnt, *(resultBundle->RNA_seq+cnt), basecode[*(resultBundle->RNA_seq+cnt)]);
+   }
+	printf("FINISHED READING\n");
+	
+   return resultBundle;
 }
 
 
@@ -332,18 +415,4 @@ void PrintTree(TreeNode* tree, int indent)
 	PrintTree(tree->children[i], indent + 1);
     }
 }
-
-// int main(int argc, char* argv[])
-//{
-//	if (argc < 2)
-//	{
-//	fprintf(stderr, "USAGE: RNAScoring <filename>\n");
-//	return 1;
-//	}
-//
-//	TreeNode* tree = CreateFromFile(argv[1]);
-//	PrintTree(tree, 0);
-//	return 0;
-//}
-
  
