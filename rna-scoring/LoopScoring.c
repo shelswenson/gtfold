@@ -194,10 +194,8 @@ int eH(int i, int j, int* RNA, nndb_constants* param) {
 }
 
 int eS(int i, int j, int* RNA, nndb_constants* param) {
- 	printf("RNA i is: ");
-	printf("i=%d: value=%d ", i, RNA[i]);
 	//ZS: Score a stack. 
-   int energy;
+   int energy ;
 	energy = param->stack[fourBaseIndex(RNA[i], RNA[j], RNA[i + 1], RNA[j - 1])]; 
 	return energy;
 }

@@ -138,7 +138,8 @@ unsigned char ReadBase(FILE* filePtr, int index, BaseData* baseData, int* pairIn
 		baseData->base = U;
 		break;
 
-
+/* NO SUPPORT FOR AMBIGUOUS BASES CURRENTLY */
+/*
 	    case 'm':
 	    case 'M':
 		baseData->base = M;
@@ -194,7 +195,7 @@ unsigned char ReadBase(FILE* filePtr, int index, BaseData* baseData, int* pairIn
 		baseData->base = N;
 		break;
 
-
+*/
 	    default:
 		fprintf(stderr, "Bad base: index %d\n", index);
 		return 0;
@@ -277,9 +278,9 @@ TreeNode* CreateNode(
 	 
     if (!(*returnPair))
     {
-	result->isPair = 0;
-	*nextIndex = lowIndex + 1;
-	return result;
+	  	result->isPair = 0;
+		*nextIndex = lowIndex + 1;
+		return result;
     }
 
     result->isPair = 1;
@@ -336,7 +337,8 @@ ResultBundle* CreateFromFile(char* filename)
 	 int value = readLength(filePtr_second); 
 	 printf("Length of sequence: %d\n", value);
 
-	 int *RNA = (int *)malloc(sizeof(int)*value+1); //ZS: In GTfold, RNA[1] is the first base, so complying with that here
+	 int *RNA = (int *)malloc(sizeof(int)*value+1); 
+	 //ZS: In GTfold, RNA[1] is the first base, so complying with that here
  
     TreeNode* result = (TreeNode*)malloc(sizeof(TreeNode));
     result->numChildren = 0;
@@ -349,9 +351,6 @@ ResultBundle* CreateFromFile(char* filename)
     int nextIndex = 1;
     int pairIndex;
     BaseData bData;
-    
-    ResultBundle* resultBundle = (ResultBundle*)malloc(sizeof(ResultBundle));
-    resultBundle->treenode = result;
     
     TreeNode* child = CreateNode(nextIndex, &nextIndex, filePtr, isBPSEQ, &bData, &pairIndex, &RNA[0]);
     
@@ -370,19 +369,12 @@ ResultBundle* CreateFromFile(char* filename)
 	fprintf(stderr, "Empty or malformed file: %s\n", filename);
     }
     
+   ResultBundle* resultBundle = (ResultBundle*)malloc(sizeof(ResultBundle));
    resultBundle->RNA_seq = &RNA[0];
 	resultBundle->length = value;
-   //print out the whole RNA array. 
-	int cnt;
-	char basecode[4] = {'A','C','G','U'};
-	printf("Size %d\n", value);
-	for(cnt = 1; cnt <= value; cnt++){
-       printf("%d: %d=%c\n", cnt, RNA[cnt], basecode[RNA[cnt]]);
-       printf("%d: %d=%c\n", cnt, *(resultBundle->RNA_seq+cnt), basecode[*(resultBundle->RNA_seq+cnt)]);
-   }
-	printf("FINISHED READING\n");
-	
-   return resultBundle;
+   resultBundle->treenode = result;
+   
+	return resultBundle;
 }
 
 
