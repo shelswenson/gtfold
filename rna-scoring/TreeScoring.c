@@ -50,16 +50,18 @@ int ScoreNode(TreeNode* node, int* RNA, nndb_constants* param){
 			{  // must be bulge or internal 
 			   
 				int energy = eL(node->lowBase.index, node->highBase.index, 
-				              node->lowBase.index+1, node->highBase.index, RNA, param); //STUB
+				              node->children[pairedChildren[0]]->lowBase.index,
+				              node->children[pairedChildren[0]]->highBase.index,
+								  RNA, param);
             result += energy;
 				printf("Found a Bulge or Inernal Loop with energy %i\n", energy);
 			}
 		}
 		else  // must be a multi-loop
 		{	
-			int nr_branches = 3; //STUB
-			int nr_unpaired = 3; //STUB
-			int energy = eM(3, 3, param);
+			int nr_branches = node->numChildren; //ZS: I'm not sure about this????
+			int nr_unpaired = node->numChildren - numPairedChildren;
+			int energy = eM(nr_branches, nr_unpaired, param);
 			result += energy;
 			printf("Multi-loop with energy %i\n", energy);
 		}
