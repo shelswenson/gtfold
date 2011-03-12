@@ -34,37 +34,40 @@ int ScoreNode(TreeNode* node, int* RNA, nndb_constants* param){
 		if (numPairedChildren == 0)  // must be a hairpin
 		{
 			
-          //result += eH(0,0, RNA, param);
-          //result += 0;
-
-			printf("Found a Hairpin Loop\n");
+			 int energy = eH(node->lowBase.index,node->highBase.index, RNA, param);
+          result += energy;
+			printf("Hairpin Loop with energy %i\n", energy);
 		}
 		else if (numPairedChildren == 1)  // must be stack, bulge, or internal
 		{
 			if (node->numChildren == 1)  // must be stack 
 			{
-			 //	printf("Found a stacked pair:");
           	int energy = eS(node->lowBase.index, node->highBase.index, RNA, param);
 	       	result += energy; 
-	     		printf("Found a stacked pair with energy %i\n", energy);
-			//	printf("Energy so far: %d\n", result);
+	     		printf("Stacked pair with energy %i\n", energy);
 			}
 			else 
 			{  // must be bulge or internal 
-			//	result += eL(NULL,NULL,NULL,NULL);
-			 
-				//printf("Found a Bulge or Inernal Loop\n");
+			   
+				int energy = eL(node->lowBase.index, node->highBase.index, 
+				              node->lowBase.index+1, node->highBase.index, RNA, param); //STUB
+            result += energy;
+				printf("Found a Bulge or Inernal Loop with energy %i\n", energy);
 			}
 		}
 		else  // must be a multi-loop
 		{	
-		//	result += eM(NULL,NULL);
-			//printf("Found a Mulit-Loop\n");
+			int nr_branches = 3; //STUB
+			int nr_unpaired = 3; //STUB
+			int energy = eM(3, 3, param);
+			result += energy;
+			printf("Multi-loop with energy %i\n", energy);
 		}
 	}
 	else { // must be external
-	//	result += eE(NULL,NULL);
-		//printf("Found a External Loop\n");
+      int energy = eE(RNA, param);
+		result += energy; 
+		printf("External loop with energy %i\n", energy);
 	}
 
 	return result;
