@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-int result;
 //Shel: Function for scoring a node (recursive)
 int ScoreNode(TreeNode* node, int* RNA, nndb_constants* param){
+	int result;
 	result = 0;
 	int *pairedChildren;
 	pairedChildren = NULL;
@@ -46,7 +46,8 @@ int ScoreNode(TreeNode* node, int* RNA, nndb_constants* param){
 			 //	printf("Found a stacked pair:");
           	int energy = eS(node->lowBase.index, node->highBase.index, RNA, param);
 	       	result += energy; 
-				printf("Found a Stacked Pair with energy %i\n", energy);
+	     		printf("Found a stacked pair with energy %i\n", energy);
+			//	printf("Energy so far: %d\n", result);
 			}
 			else 
 			{  // must be bulge or internal 
