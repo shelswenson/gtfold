@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include "LoopScoring.h"
 #include "TreeScoring.h"
 
@@ -115,6 +116,7 @@ int eH(int i, int j, int* RNA, nndb_constants* param) {
 		/*  tetraloop */
 		key = 0;
 		tlink = 0;
+		int cnt2; 
 		for (index = 0; index < 6; ++index) {
 			switch (RNA[i + index]) {
 			case BASE_A:
@@ -133,7 +135,19 @@ int eH(int i, int j, int* RNA, nndb_constants* param) {
 				kmult = 0;
 				fprintf(stderr, "ERROR: in tetraloop calculation\n");
 			}
-			key += kmult * (int) pow(10.0, 5 - index);
+			//ZS: The math.pow function didn't work for some reason on my machine.
+			//It is also silly to convert to doubles when it isn't necessary.
+			//So I just made this "quick and dirty". fix A more ideal solution 
+			//would use bit operations for the "key", but then it has to be 
+			//changed both here and in the loader. 
+		   int powval=1;
+			for(cnt2=5-index; cnt2>0; cnt2--){
+					powval *=10;
+			}
+			
+			//key += kmult * (int) pow(10.0, 5 - index);  //ZS: This didn't work
+			key += kmult * powval; 
+			
 		}
 		/*  if the sequence is in tloop, we use this value */
 		for (count = 1; count < param->numoftloops && tlink == 0; ++count) {
@@ -143,6 +157,7 @@ int eH(int i, int j, int* RNA, nndb_constants* param) {
 		}
 		energy = tlink + param->hairpin[size] + param->tstkh[fourBaseIndex(RNA[i], RNA[j],
 				RNA[i + 1], RNA[j - 1])] + param->eparam[4];
+	   
 	}
 
 	else if (size == 3) {

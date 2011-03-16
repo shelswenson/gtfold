@@ -28,8 +28,15 @@ int convertToGTfoldBase(int value){
     }
 }
 
-/*ZS: Reads the length of the sequence from the .ct file. This is the FIRST
-number that occurs in the file at all.*/
+/*ZS: Reads the length of the sequence from the .ct file. 
+Assumes the first line of the file is 
+
+sometabsandspaces thenumber sometext
+
+If it isn't like that, it will break. 
+
+Someone more competent than me should fix this someday, for now it works. 
+*/
 int readLength(FILE* filePtr){
    int junk = 0;
 	int nextChar = 0;
