@@ -59,7 +59,7 @@ int ScoreNode(TreeNode* node, int* RNA, nndb_constants* param){
 		}
 		else  // must be a multi-loop
 		{	
-			int nr_branches = node->numChildren; //ZS: I'm not sure about this????
+			int nr_branches = node->numPairedChildren + 1; //ZS: I'm not sure about this????
 			int nr_unpaired = node->numChildren - numPairedChildren;
 			int energy = eM(nr_branches, nr_unpaired, param);
 			result += energy;
