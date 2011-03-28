@@ -59,9 +59,7 @@ int ScoreNode(TreeNode* node, int* RNA, nndb_constants* param){
 		}
 		else  // must be a multi-loop
 		{	
-			int nr_branches = node->numPairedChildren + 1; //ZS: I'm not sure about this????
-			int nr_unpaired = node->numChildren - numPairedChildren;
-			int energy = eM(nr_branches, nr_unpaired, param);
+			int energy = eM(node, pairedChildren, numPairedChildren, RNA, param);
 			result += energy;
 			printf("%d \t %d: Multi-loop with energy %.2f\n",  node->lowBase.index, node->highBase.index, (double)energy/100);
 		}

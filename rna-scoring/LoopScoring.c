@@ -216,7 +216,7 @@ int eS(int i, int j, int* RNA, nndb_constants* param) {
 }
 
 
-int eM(int nr_branches, int nr_unpaired, nndb_constants* param) {
+int _eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nndb_constants* param) {
     //ZS: Score a multiloop 
     //Here, no dangling energies are taken into account, we are using the formula:
     //eM(i,j, i1, j1, ... , ik, jk) = a + b*<nr of branches> + c*<nr of unpaired nt> 
@@ -224,7 +224,23 @@ int eM(int nr_branches, int nr_unpaired, nndb_constants* param) {
 	int a = param->multConst[0];
 	int b = param->multConst[1];
 	int c = param->multConst[2];
-   energy = a + nr_branches*b + nr_unpaired*c;
+	int nr_branches = numPairedChildren + 1;
+	int nr_unpaired = node->numChildren - numPairedChildren;
+	energy = a + nr_branches*b + nr_unpaired*c;
+	return energy;
+}
+
+int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nndb_constants* param) {
+    //ZS: Score a multiloop 
+    //Here, no dangling energies are taken into account, we are using the formula:
+    //eM(i,j, i1, j1, ... , ik, jk) = a + b*<nr of branches> + c*<nr of unpaired nt> 
+	int energy;
+	int a = param->multConst[0];
+	int b = param->multConst[1];
+	int c = param->multConst[2];
+	int nr_branches = numPairedChildren + 1;
+	int nr_unpaired = node->numChildren - numPairedChildren;
+	energy = a + nr_branches*b + nr_unpaired*c;
 	return energy;
 }
 
