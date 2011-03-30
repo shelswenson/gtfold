@@ -17,18 +17,22 @@ int eMUnpairedRegion(int i1, int j1, int i2, int j2, int* RNA, nndb_constants* p
 		// if there are at least two nucleotides in the unpaired region,
 		// then add the energy for both a 3' and 5' dangling end 
 		// for the first and last nucleotides in the unpaired region, respectively.
+		printf("A\n");
 		energy = param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0] + param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1];
-	} else if (j1+1 == i2+1) {
+	} else if (j1+1 == i2-1) { //ZS: fixed limits 
 		// if there is only one nucleotide in the unpaired region,
 		// then add which energy is more favorable, 
 		// the unpaired region as a 3' or a 5' dangling end.
+		printf("B\n");
 		energy = MIN(param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1]);
 	} else {
 		// if the unpaire region is empty, there can be no dangling ends.
+		printf("No dangling\n");
 		energy = 0;
 	}
-	printf("between branch %d - %d and %d - %d, \t3dangle has energy %d, and \t5dangle energy %d\n",  
+	printf("between branch %d - %d and %d - %d, \n 3dangle has energy %d, and \m 5dangle energy %d\n",  
 		   i1, j1, i2, j2, param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1]);
+	printf("Returning energy = %i \n", energy);
 	return energy;
 }
 int eL(int i, int j, int ip, int jp, int* RNA, nndb_constants* param) {
@@ -243,29 +247,45 @@ int eS(int i, int j, int* RNA, nndb_constants* param) {
 
 int _eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nndb_constants* param) {
     //ZS: Score a multiloop 
-    //Here, no dangling energies are taken into account, we are using the formula:
-    //eM(i,j, i1, j1, ... , ik, jk) = a + b*<nr of branches> + c*<nr of unpaired nt> 
+    //Here, no dangling energies are taken into account, we are using the formulas from the 
+    //Turner website: for fewer than 7 unpaired nucleotides: 
+    //eM(i,j, i1, j1, ... , ik, jk) = a + b*<nr of unpaired nt> + c*<nr of branches>
+	 //for more than 6 unpaired nucleotides: 
+	 //eM = a + 6b + (1.1 kcal/mol)×ln([number of unpaired nucleotides]/6) 
+	//+ c×[number of branching helices] 
+    
 	int energy;
 	int a = param->multConst[0];
 	int b = param->multConst[1];
 	int c = param->multConst[2];
 	int nr_branches = numPairedChildren + 1;
 	int nr_unpaired = node->numChildren - numPairedChildren;
-	energy = a + nr_branches*b + nr_unpaired*c;
+	
+		printf("nr branches = %i, nr unpaired = %i, a = %i, b = %i, c = %i \n",  
+		   nr_branches, nr_unpaired, a, b, c);
+	
+	if(nr_unpaired <= 6){
+		energy = a + nr_unpaired*b + nr_branches*c;
+	}
+	else{
+	   energy = a + 6*b + 110*log(nr_unpaired/6) + c*nr_branches;
+   }
 	return energy;
 }
 
 int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nndb_constants* param) {
-    //ZS: Score a multiloop 
-    //Here, no dangling energies are taken into account, we are using the formula:
-    //eM(i,j, i1, j1, ... , ik, jk) = a + b*<nr of branches> + c*<nr of unpaired nt> 
+    //Shel: Score a multiloop 
+    //Here the dangling bases are also taken into account 
 	int energy;
 	int a = param->multConst[0];
 	int b = param->multConst[1];
 	int c = param->multConst[2];
 	int nr_branches = numPairedChildren + 1;
 	int nr_unpaired = node->numChildren - numPairedChildren;
-	energy = a + nr_branches*b + nr_unpaired*c;
+	energy = a + nr_unpaired*b + nr_branches*c;
+	
+	printf("nr branches = %i, nr unpaired = %i, a = %i, b = %i, c = %i, ENERGY = %i \n",  
+		   nr_branches, nr_unpaired, a, b, c, energy);
 	
 	energy += eMUnpairedRegion(node->highBase.index, node->lowBase.index, 
 							   node->children[pairedChildren[0]]->lowBase.index, node->children[pairedChildren[0]]->highBase.index, 
@@ -276,10 +296,12 @@ int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nnd
 		energy += eMUnpairedRegion(node->children[pairedChildren[i]]->lowBase.index, node->children[pairedChildren[i]]->highBase.index, 
 								   node->children[pairedChildren[i+1]]->lowBase.index, node->children[pairedChildren[i+1]]->highBase.index, 
 								   RNA, param);	
+		printf("Energy so far: %i \n", energy);
 	}
 	energy += eMUnpairedRegion(node->children[pairedChildren[numPairedChildren-1]]->lowBase.index, node->children[pairedChildren[numPairedChildren-1]]->highBase.index, 
 									  node->highBase.index, node->lowBase.index,
 									  RNA, param);
+			printf("Energy so far: %i \n", energy);
 	return energy;
 }
 
