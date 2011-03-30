@@ -6,6 +6,31 @@
 char bases[16] = {0, 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U',
                       'W', 'Y', 'H', 'K', 'D', 'B', 'N'};
 
+int eMUnpairedRegion(int i1, int j1, int i2, int j2, int* RNA, nndb_constants* param){
+	//Shel: helper function for calculating muliloop energies. 
+	//Computes dangling energy for unpaired region given the pairs for the stems on either side.
+	//(based on Andronescu masters thesis,
+	// M.Sc., Academy of Economic Studies, Bucharest, Romania, 2000, 
+	// pg 32.)
+	int energy;
+	if (j1+1 < i2-1) {
+		// if there are at least two nucleotides in the unpaired region,
+		// then add the energy for both a 3' and 5' dangling end 
+		// for the first and last nucleotides in the unpaired region, respectively.
+		energy = param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0] + param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1];
+	} else if (j1+1 == i2+1) {
+		// if there is only one nucleotide in the unpaired region,
+		// then add which energy is more favorable, 
+		// the unpaired region as a 3' or a 5' dangling end.
+		energy = MIN(param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1]);
+	} else {
+		// if the unpaire region is empty, there can be no dangling ends.
+		energy = 0;
+	}
+	printf("between branch %d - %d and %d - %d, \t3dangle has energy %d, and \t5dangle energy %d\n",  
+		   i1, j1, i2, j2, param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1]);
+	return energy;
+}
 int eL(int i, int j, int ip, int jp, int* RNA, nndb_constants* param) {
     //ZS: internal loop calculations, borrowed from GTfold, with small 
     //modifications (eg. deleted eparam's which nobody understood and 
@@ -241,6 +266,11 @@ int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nnd
 	int nr_branches = numPairedChildren + 1;
 	int nr_unpaired = node->numChildren - numPairedChildren;
 	energy = a + nr_branches*b + nr_unpaired*c;
+	
+	energy += eMUnpairedRegion(node->highBase.index, node->lowBase.index, 
+							   node->children[pairedChildren[0]]->lowBase.index, node->children[pairedChildren[0]]->highBase.index, 
+							   RNA, param);
+	
 	return energy;
 }
 
