@@ -270,7 +270,16 @@ int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nnd
 	energy += eMUnpairedRegion(node->highBase.index, node->lowBase.index, 
 							   node->children[pairedChildren[0]]->lowBase.index, node->children[pairedChildren[0]]->highBase.index, 
 							   RNA, param);
-	
+	int i;
+	for (i = 0; i < numPairedChildren-1; i++) {
+		//Scores the dangling ends in unpaired regions between paired children
+		energy += eMUnpairedRegion(node->children[pairedChildren[i]]->lowBase.index, node->children[pairedChildren[i]]->highBase.index, 
+								   node->children[pairedChildren[i+1]]->lowBase.index, node->children[pairedChildren[i+1]]->highBase.index, 
+								   RNA, param);	
+	}
+	energy += eMUnpairedRegion(node->children[pairedChildren[numPairedChildren-1]]->lowBase.index, node->children[pairedChildren[numPairedChildren-1]]->highBase.index, 
+									  node->highBase.index, node->lowBase.index,
+									  RNA, param);
 	return energy;
 }
 
