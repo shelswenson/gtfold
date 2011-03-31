@@ -39,7 +39,7 @@ Someone more competent than me should fix this someday, for now it works.
 */
 int readLength(FILE* filePtr){
    int junk = 0;
-	int nextChar = 0;
+	
 	char* junktext; 
 	
 	/* Read the first number. */
