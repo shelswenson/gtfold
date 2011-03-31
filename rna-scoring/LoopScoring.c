@@ -30,7 +30,7 @@ int eMUnpairedRegion(int i1, int j1, int i2, int j2, int* RNA, nndb_constants* p
 		printf("No dangling\n");
 		energy = 0;
 	}
-	printf("between branch %d - %d and %d - %d, \n 3dangle has energy %d, and \m 5dangle energy %d\n",  
+	printf("between branch %d - %d and %d - %d, \n 3dangle has energy %d, and \n 5dangle energy %d\n",  
 		   i1, j1, i2, j2, param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1]);
 	printf("Returning energy = %i \n", energy);
 	return energy;
