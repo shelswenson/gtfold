@@ -8,7 +8,7 @@
 #include "data.h"
 
 #define fourBaseIndex(a, b, c, d) (((a) << 6) + ((b) << 4) + ((c) << 2) + (d))
-#define auPen(i, j) ((( (i)==BASE_U || (j)==BASE_U ) && ( (i)==BASE_A || (i)==BASE_G || (j)==BASE_A || (j)==BASE_G )) ? 1 : 0)
+#define auPen(i, j) (( ((i)==3 || (j)==3) && ( (i)==0 || (i)==2 || (j)==0 || (j)==2 )) ? 1 : 0)
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 

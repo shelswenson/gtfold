@@ -40,6 +40,7 @@ int main(int argc, char* argv[])
 	int tree_score = ScoreNode(tree, resultBundle->RNA_seq, param);
 	printf("Tree score is ");
 	printf("%.2f\n", (double)tree_score/100);
+	
 
     return 0;
 }

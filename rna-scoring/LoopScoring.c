@@ -17,22 +17,23 @@ int eMUnpairedRegion(int i1, int j1, int i2, int j2, int* RNA, nndb_constants* p
 		// if there are at least two nucleotides in the unpaired region,
 		// then add the energy for both a 3' and 5' dangling end 
 		// for the first and last nucleotides in the unpaired region, respectively.
-		printf("A\n");
-		energy = param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0] + param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1];
+		//printf("A\n");
+		energy = param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0] + param->dangle[RNA[j2]][RNA[i2]][RNA[i2-1]][1];
 	} else if (j1+1 == i2-1) { //ZS: fixed limits 
 		// if there is only one nucleotide in the unpaired region,
 		// then add which energy is more favorable, 
 		// the unpaired region as a 3' or a 5' dangling end.
-		printf("B\n");
-		energy = MIN(param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1]);
+		//printf("B\n");
+		energy = MIN(param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[j2]][RNA[i2]][RNA[i2-1]][1]);
 	} else {
 		// if the unpaire region is empty, there can be no dangling ends.
-		printf("No dangling\n");
+	//	printf("No dangling\n");
 		energy = 0;
 	}
-	printf("between branch %d - %d and %d - %d, \n 3dangle has energy %d, and \n 5dangle energy %d\n",  
-		   i1, j1, i2, j2, param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[i2]][RNA[j2]][RNA[i2-1]][1]);
-	printf("Returning energy = %i \n", energy);
+	//printf("between branch %d - %d and %d - %d, \n 3dangle has energy %d, and \n 5dangle energy %d\n",  
+	//	   i1, j1, i2, j2, param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0],  param->dangle[RNA[j2]][RNA[i2]][RNA[i2-1]][1]);
+	//printf("Nucleotides were: %d-%d and %d-%d \n", RNA[i1], RNA[j1], RNA[i2], RNA[j2]);
+	//printf("Returning energy = %i \n", energy);
 	return energy;
 }
 int eL(int i, int j, int ip, int jp, int* RNA, nndb_constants* param) {
@@ -261,8 +262,8 @@ int _eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nn
 	int nr_branches = numPairedChildren + 1;
 	int nr_unpaired = node->numChildren - numPairedChildren;
 	
-		printf("nr branches = %i, nr unpaired = %i, a = %i, b = %i, c = %i \n",  
-		   nr_branches, nr_unpaired, a, b, c);
+	//	printf("nr branches = %i, nr unpaired = %i, a = %i, b = %i, c = %i \n",  
+	//	   nr_branches, nr_unpaired, a, b, c);
 	
 	if(nr_unpaired <= 6){
 		energy = a + nr_unpaired*b + nr_branches*c;
@@ -284,8 +285,8 @@ int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nnd
 	int nr_unpaired = node->numChildren - numPairedChildren;
 	energy = a + nr_unpaired*b + nr_branches*c;
 	
-	printf("nr branches = %i, nr unpaired = %i, a = %i, b = %i, c = %i, ENERGY = %i \n",  
-		   nr_branches, nr_unpaired, a, b, c, energy);
+	//printf("nr branches = %i, nr unpaired = %i, a = %i, b = %i, c = %i, ENERGY = %i \n",  
+	//	   nr_branches, nr_unpaired, a, b, c, energy);
 	
 	energy += eMUnpairedRegion(node->highBase.index, node->lowBase.index, 
 							   node->children[pairedChildren[0]]->lowBase.index, node->children[pairedChildren[0]]->highBase.index, 
@@ -296,12 +297,36 @@ int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nnd
 		energy += eMUnpairedRegion(node->children[pairedChildren[i]]->lowBase.index, node->children[pairedChildren[i]]->highBase.index, 
 								   node->children[pairedChildren[i+1]]->lowBase.index, node->children[pairedChildren[i+1]]->highBase.index, 
 								   RNA, param);	
-		printf("Energy so far: %i \n", energy);
+		//printf("Energy so far: %i \n", energy);
 	}
 	energy += eMUnpairedRegion(node->children[pairedChildren[numPairedChildren-1]]->lowBase.index, node->children[pairedChildren[numPairedChildren-1]]->highBase.index, 
 									  node->highBase.index, node->lowBase.index,
 									  RNA, param);
-			printf("Energy so far: %i \n", energy);
+	//printf("Energy so far: %i \n", energy);
+	
+	i=0;
+	for(i=0; i < numPairedChildren; i++){
+     //ZS: Give AU penalty for every non-GC pair. 
+     //the aupen function is defined in LoopScoring.h and will do this automatically
+     //so we just call it 
+     energy += param->auend*auPen(RNA[node->children[pairedChildren[i]]->lowBase.index], RNA[node->children[pairedChildren[i]]->highBase.index]);
+     if(auPen(RNA[node->children[pairedChildren[i]]->lowBase.index], RNA[node->children[pairedChildren[i]]->highBase.index]) != 0){
+				 printf("AU penalty awarded for branch nr. %i (%i, %i%): %i  \n", i, 
+				 RNA[node->children[pairedChildren[i]]->lowBase.index], 
+				 RNA[node->children[pairedChildren[i]]->highBase.index], 
+				 param->auend*auPen(RNA[node->children[pairedChildren[i]]->lowBase.index], 
+				 RNA[node->children[pairedChildren[i]]->highBase.index]) );
+				 }
+   }
+   
+   //Check the same node for dangling
+    energy += param->auend*auPen(RNA[node->lowBase.index], RNA[node->highBase.index]);
+	 if(auPen(RNA[node->lowBase.index],RNA[node->highBase.index])>0){
+        printf("AU penalty awarded for root branch with bases (%i, %i%): %i  \n", 
+				 RNA[node->lowBase.index], 
+				 RNA[node->highBase.index],
+				 param->auend*auPen(RNA[node->lowBase.index], RNA[node->highBase.index]));
+	 }
 	return energy;
 }
 

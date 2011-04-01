@@ -40,7 +40,6 @@ int main(int argc, char* argv[])
 		return 1;
     }
 	
-	printf("hi");
 	char bases[16] = {0, 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U',
 		'W', 'Y', 'H', 'K', 'D', 'B', 'N'};
     ResultBundle* resultBundle = CreateFromFile(argv[1]);
