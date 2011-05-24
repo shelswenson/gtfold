@@ -27,7 +27,7 @@ int eMUnpairedRegion(int i1, int j1, int i2, int j2, int* RNA, nndb_constants* p
 		energy = MIN(param->dangle[RNA[j1]][RNA[i1]][RNA[j1+1]][0], param->dangle[RNA[j2]][RNA[i2]][RNA[i2-1]][1]);
 	} else {
 		// if the unpaire region is empty, there can be no dangling ends.
-	//	printf("No dangling\n");
+		//	printf("No dangling\n");
 		energy = 0;
 	}
 	//printf("between branch %d - %d and %d - %d, \n 3dangle has energy %d, and \n 5dangle energy %d\n",  
@@ -240,7 +240,7 @@ int eH(int i, int j, int* RNA, nndb_constants* param) {
 
 int eS(int i, int j, int* RNA, nndb_constants* param) {
 	//ZS: Score a stack. 
-   int energy ;
+   int energy;
 	energy = param->stack[fourBaseIndex(RNA[i], RNA[j], RNA[i + 1], RNA[j - 1])]; 
 	return energy;
 }
@@ -331,8 +331,48 @@ int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nnd
 }
 
 
-int eE(int* RNA, nndb_constants* param){
-    //ZS: Score an external loop 
-    return 0; 
+int eE(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nndb_constants* param){
+	int energy;
+	energy = 0;
+	int i;
+	for(i = 0; i < numPairedChildren; i++){
+		//Shel: Give AU penalty for every non-GC pair. 
+		//the aupen function is defined in LoopScoring.h and will do this automatically
+		//so we just call it 
+		energy += param->auend*auPen(RNA[node->children[pairedChildren[i]]->lowBase.index], RNA[node->children[pairedChildren[i]]->highBase.index]);
+		if(auPen(RNA[node->children[pairedChildren[i]]->lowBase.index], RNA[node->children[pairedChildren[i]]->highBase.index]) != 0){
+			printf("AU penalty awarded for exterior branch nr. %i (%i, %i%): %i  \n", i, 
+				   RNA[node->children[pairedChildren[i]]->lowBase.index], 
+				   RNA[node->children[pairedChildren[i]]->highBase.index], 
+				   param->auend*auPen(RNA[node->children[pairedChildren[i]]->lowBase.index], 
+									  RNA[node->children[pairedChildren[i]]->highBase.index]) );
+		}
+	}
+    //Here the dangling bases are also taken into account 
+	if ((node->children[0])->isPair == 0) {//If there is a initial dangling end
+		int j;
+		i = (node->children[pairedChildren[0]])->lowBase.index;
+		j = (node->children[pairedChildren[0]])->highBase.index;
+		energy += param->dangle[RNA[j]][RNA[i]][RNA[i-1]][1];	
+	}
+	
+	
+	if(numPairedChildren > 1) {	//If there is more than one branch on the external loop			
+		for (i = 0; i < numPairedChildren-1; i++) {
+			//Scores the dangling ends in unpaired regions between paired children
+			energy += eMUnpairedRegion(node->children[pairedChildren[i]]->lowBase.index, node->children[pairedChildren[i]]->highBase.index, 
+									   node->children[pairedChildren[i+1]]->lowBase.index, node->children[pairedChildren[i+1]]->highBase.index, 
+									   RNA, param);	
+			//printf("Energy so far: %i \n", energy);
+		}
+	}	
+	
+	if(pairedChildren[numPairedChildren-1] < node->numChildren - 1){ //If there is a trailing dangling end
+		int j;
+		i = (node->children[pairedChildren[numPairedChildren-1]])->lowBase.index;
+		j = (node->children[pairedChildren[numPairedChildren-1]])->highBase.index;
+		energy += param->dangle[RNA[j]][RNA[i]][RNA[j+1]][0];	
+	}
+	return energy; 
 }
 

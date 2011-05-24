@@ -65,7 +65,7 @@ int ScoreNode(TreeNode* node, int* RNA, nndb_constants* param){
 		}
 	}
 	else { // must be external
-      int energy = eE(RNA, param);
+      int energy = eE(node, pairedChildren, numPairedChildren, RNA, param);
 		result += energy; 
 		printf("%d \t %d: External loop with energy %.2f\n",  node->lowBase.index, node->highBase.index, (double)energy/100);
 	}

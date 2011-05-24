@@ -17,6 +17,6 @@ int eH(int i, int j, int* RNA, nndb_constants* param);
 int eS(int i, int j, int* RNA, nndb_constants* param);
 int eL(int i, int j, int ip, int jp, int* RNA, nndb_constants* param);
 int eM(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nndb_constants* param);
-int eE(int* RNA, nndb_constants* param);
+int eE(TreeNode* node, int* pairedChildren, int numPairedChildren, int* RNA, nndb_constants* param);
 
 #endif
