@@ -286,6 +286,12 @@ int main(int argc, char** argv) {
 		freeTwoD(P, seq.length() + 1, seq.length() + 1);
 	}
 
+	if(BPPD_ENABLED){
+		dangle_struct dstruct = malloc_partition_arrays_d(seq.length());
+		fill_partition_arrays_d(dstruct);	
+		free_partition_arrays_d(dstruct);
+	}
+
 	// release the malloc'd arrays
 	free_fold(seq.length());
 /*

@@ -9,7 +9,8 @@ bool NOISOLATE;
 //bool PARAMS;
 bool PARAM_DIR = false;
 bool LIMIT_DISTANCE;
-bool BPP_ENABLED;
+bool BPP_ENABLED = false;
+bool BPPD_ENABLED = false;
 bool SUBOPT_ENABLED;
 bool CONS_ENABLED = false;
 bool VERBOSE = false;
@@ -130,6 +131,9 @@ void parse_options(int argc, char** argv) {
 				else
 					help();
 			}				
+			else if(strcmp(argv[i], "--bppd") == 0){
+				BPPD_ENABLED = true;
+			}
 		} else {
 			seqfile = argv[i];
 		}

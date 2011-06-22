@@ -14,6 +14,7 @@ extern bool NOISOLATE;
 //extern bool PARAMS;
 extern bool LIMIT_DISTANCE;
 extern bool BPP_ENABLED;
+extern bool BPPD_ENABLED;
 extern bool SUBOPT_ENABLED;
 extern bool CONS_ENABLED;
 extern bool VERBOSE;
