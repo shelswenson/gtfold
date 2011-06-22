@@ -84,30 +84,45 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 	int len = part_struct.length;
 
 	int seg_length;
-	int i,j;
+	int i,j,l;
+	double second_half; //used to calculate conditional terms
 
 	for(seg_length = MIN_TURN; seg_length <= len; len++){
 		//Insert parallelism here.
 		for(i = 1; i < len - seg_length; i++){
 			j = i + seg_length - 1;
 
-			int l;
-			if(canPair(i,j)){
+			if(canPair(RNA[i],RNA[j])){
 				for(l = i+2; l < j; l++){
-					upm[i][j] += up[i+1][l] * 
-								exp(-(Ea + 2 * Ec + auPenalty(i + 1,l)/RT)) *
-								(exp(-Ed3(i + 1,l,l+1)/RT) * 
+					if(l + 2 < j){
+						second_half = (exp(-Ed3(i + 1,l,l+1)/RT) * 
 									u_multi[l + 2][j - 1] + 
 									u_multi[l + 1][j - 1] -
 									u_multi[l + 2][j - 1]);
+					}
+					else
+					{
+						second_half = 1;
+					}
+					upm[i][j] += up[i+1][l] * 
+								exp(-(Ea + 2 * Ec + auPenalty(i + 1,l)/RT)) *
+								second_half;
 					if(l != i+2){ //goes from i + 2 < l < j
-						upm[i][j] += up[i + 2][l] * 
-								exp(-(Ea + 2 * Ec + Eb + Ed3(j,i,i + 1) + 
-									auPenalty(i + 2, l))/RT) *
-								(exp(-Ed3(i + 2,l,l + 1)/RT)*
+						if(l + 2 < j - 1){
+							second_half = (exp(-Ed3(i + 2,l,l + 1)/RT)*
 									u_multi[l + 2][j - 1] + 
 									u_multi[l + 1][j - 1]  - 
 									u_multi[l + 2][j - 1]);
+						}
+						else
+						{
+							second_half = 1;
+						}
+
+						upm[i][j] += up[i + 2][l] * 
+								exp(-(Ea + 2 * Ec + Eb + Ed3(j,i,i + 1) + 
+									auPenalty(i + 2, l))/RT) *
+									second_half;
 
 						if(l != j - 1){
 							upm[i][j] += exp(-Ed3(j,i,i + 1)/RT)*
@@ -140,18 +155,38 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 			}//End checkpair conditional
 
 			for(l = i + 1; l <= j ; l++){
-				u_multi[i][j] += up[i][l] * exp(-(Ec + auPenalty(i,l))/RT) *
-						(cond_dangle(j + 1,i,l) * exp(-(j - l) * Eb/RT) + 
+				if(l + 2 < j)
+				{
+					second_half = (cond_dangle(j + 1,i,l) * 
+							exp(-(j - l) * Eb/RT) + 
 							exp(-Ed3(i,l,l + 1)/RT) * u_multi[l + 2][j] + 
 							u_multi[l + 1][j] -
 							u_multi[l + 2][j]);
-				if(l != i+1){	
-					u_multi[i][j] += up[i + 1][j]*i
-							exp(-(Ec + Eb + auPenalty(i + 1,l))/RT)*
-							(cond_dangle(j + 1, i + 1, l) * exp(-(j - l)*Eb/RT) + 
+				}
+				else
+				{
+					second_half = 1;
+				}
+
+				u_multi[i][j] += up[i][l] * exp(-(Ec + auPenalty(i,l))/RT) *
+								second_half;
+				if(l != i+1){ //this term runs from i + 2 to j	
+					if(l + 2 < j)
+					{
+						second_half = (cond_dangle(j + 1, i + 1, l) * 
+								exp(-(j - l)*Eb/RT) + 
 								exp(-Ed3(i + 1,l,l + 1)/RT) * u_multi[l + 2][j] + 
 								u_multi[l + 1][j] - 
 								u_multi[l + 2][j]);
+					}
+					else
+					{
+						second_half = 1;
+					}
+					u_multi[i][j] += up[i + 1][j]*
+							exp(-(Ec + Eb + auPenalty(i + 1,l))/RT)*
+							second_half;
+
 					if(l != j){
 						u_multi[i][j] += exp(-(Ec + (l - i) * Eb)/RT) * 
 										partial_multi2[l][j];
@@ -164,33 +199,46 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 			int h = i; //To stay consistant with the notation in the paper.
 
 			for(l = h+1; l < j; l++){
+				double second_half_ext, second_half_mul, second_half_mul2;
+				if(l + 2 < j){
+					second_half_ext = 
+							(exp(-Ed3(h,l,l + 1)/RT)*u[l + 2][j - 1] + 
+								u[l + 1][j] -
+								u[l + 2][j]);
+
+					second_half_mul = 
+							(exp(-Ed3(h,l,l + 1)/RT)*u_multi[l + 2][j - 1] + 
+								u_multi[l + 1][j - 1] -
+								u_multi[l + 2][j - 1]);
+
+					second_half_mul2 =
+							(cond_dangle(j + 1, h, l)*exp(-(j - l) * Eb / RT) + 
+							exp(-Ed3(h,l,l + 1)/RT)*u_multi[l + 2][j] + 
+								u_multi[l + 1][j] - 
+								u_multi[l + 2][j]);
+				}
+				else
+				{
+					second_half_ext = second_half_mul = second_half_mul2 = 1;
+				}
+				
 				partial_external[h][j] += up[h][l] * 
 							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT) *
-							(exp(-Ed3(h,l,l + 1)/RT)*u[l + 2][j - 1] + 
-							u[l + 1][j] -
-							u[l + 2][j]);
+							second_half_ext;
 
 				partial_multi[h][j] += up[h][l] * 
 							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT) *
-							(exp(-Ed3(h,l,l + 1)/RT)*u_multi[l + 2][j - 1] + 
-							u_multi[l + 1][j - 1] -
-							u_multi[l + 2][j - 1]);
+							second_half_mul;
 
 				partial_multi2[h][j] += up[h][l] * 
 							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT) *
-							(cond_dangle(j + 1, h, l)*exp(-(j - l) * Eb / RT) + 
-							exp(-Ed3(h,l,l + 1)/RT)*u_multi[l + 2][j] + 
-							u_multi[l + 1][j] - 
-							u_multi[l + 2][j]);
+							second_half_mul2;
 							
 			}
 			/** partial_multi2 goes up to j **/
+			//Since l = j here there's no need for a second_half
 			partial_multi2[h][j] += up[h][l] * 
-						exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT) *
-						(cond_dangle(j + 1, h, l)*exp(-(j-l) * Eb / RT) + 
-						exp(-Ed3(h,l,l + 1)/RT) * u_multi[l + 2][j] + 
-						u_multi[l + 1][j] - 
-						u_multi[l + 2][j]);
+						exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT);
 
 			//Finally we do the u matrix
 			u[i][j] = 1 + up[i][j]*exp(-auPenalty(i,j) /RT);
