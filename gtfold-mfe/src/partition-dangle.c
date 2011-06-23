@@ -10,6 +10,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "energy.h"
 #include "utils.h"
@@ -85,16 +86,18 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 
 	int seg_length;
 	volatile int i,j,l;
-	double second_half; //used to calculate conditional terms
+	double second_half = 1; //used to calculate conditional terms
 
 	for(seg_length = MIN_TURN; seg_length <= len; seg_length++){
+		printf("Length %d\n", seg_length);
 		//Insert parallelism here.
 		for(i = 1; i < len - seg_length; i++){
 			j = i + seg_length - 1;
 
 			if(canPair(RNA[i],RNA[j])){
 				for(l = i+2; l < j; l++){
-					if(l + 2 < j){
+					if(l + 2 < j)
+					{
 						second_half = (exp(-Ed3(i + 1,l,l+1)/RT) * 
 									u_multi[l + 2][j - 1] + 
 									u_multi[l + 1][j - 1] -
@@ -125,19 +128,23 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 									second_half;
 
 						if(l != j - 1){
+							//Changed h in the paper to l it makes no difference
+							//other than unifying loops
 							upm[i][j] += exp(-Ed3(j,i,i + 1)/RT)*
 									exp(-(Ea + 2 * Ec + (l - i - 1) * Eb)/RT) * 
 									partial_multi[l][j]; 
 
-							//Changed h in the paper to l it makes no difference
-							//other than unifying loops
 						}
 					}
 				}
+				if(upm[i][j]<0)
+				printf("What the hell?! why is upm[%d][%d] negative? %f\n", i,j,upm[i][j]);
+				
 
 
 				up[i][j] += exp(-eH(i,j)/RT) + 
 					exp(-eS(i,j)/RT) * up[i + 1][j - 1] + upm[i][j];
+
 				for(l = j - 1; l > i + 1; l--){
 					if((j - l) - 2> MAX_LOOP){
 						break;
@@ -151,6 +158,9 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 							break;
 						}
 					}
+				}
+				if(up[i][j] < 0){
+					printf("What the hell?! why is up[%d][%d] negative? %f\n", i,j,up[i][j]);
 				}
 			}//End checkpair conditional
 
@@ -262,4 +272,5 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 			}
 		}//end of minor (paralellizeable) for loop
 	}//End of major for loop
+	printf("Total partition function: %f \n", u[1][len]);
 }

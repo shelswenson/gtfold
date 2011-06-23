@@ -141,7 +141,8 @@ void free_tables(int len) {
 
 
 inline int Ed3(int i, int j, int k) { return dangle[RNA[i]][RNA[j]][RNA[k]][1];}
-inline int Ed5(int i, int j, int k) { return dangle[RNA[i]][RNA[j]][RNA[k]][0]; }
+inline int Ed5(int i, int j, int k) { 
+	if(i == 0 || j ==0 || k ==0) return 1; else return dangle[RNA[i]][RNA[j]][RNA[k]][0]; }
 inline int auPenalty(int i, int j) { return auPen(RNA[i], RNA[j]);}
 
 inline int eL1(int i, int j, int ip, int jp) {
