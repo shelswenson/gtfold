@@ -96,6 +96,8 @@ main.o: main.cc /usr/include/c++/4.5/iostream \
  ../include/options.h /usr/include/c++/4.5/cstring ../include/global.h \
  ../include/energy.h ../include/algorithms.h \
  ../include/algorithms-partition.h ../include/partition-dangle.h \
+ ../include/random-sample.h /usr/include/c++/4.5/list \
+ /usr/include/c++/4.5/bits/stl_list.h /usr/include/c++/4.5/bits/list.tcc \
  ../include/constraints.h ../include/traceback.h \
  ../include/subopt_traceback.h /usr/include/c++/4.5/cassert \
  /usr/include/assert.h /usr/include/c++/4.5/stack \
@@ -408,6 +410,14 @@ main.o: main.cc /usr/include/c++/4.5/iostream \
 ../include/algorithms-partition.h:
 
 ../include/partition-dangle.h:
+
+../include/random-sample.h:
+
+/usr/include/c++/4.5/list:
+
+/usr/include/c++/4.5/bits/stl_list.h:
+
+/usr/include/c++/4.5/bits/list.tcc:
 
 ../include/constraints.h:
 

@@ -3,6 +3,9 @@
 
 #include <list>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 using namespace std;
 
 typedef struct sub_seq_t{
@@ -12,4 +15,8 @@ typedef struct sub_seq_t{
 }sub_seq;
 
 void multi_loop_strand(int i, int j, dangle_struct d_struct, int * structure, list<sub_seq> * stack);
+void sample_structure(int * structure, dangle_struct d_struct);
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -38,6 +38,7 @@
 #include "algorithms.h"
 #include "algorithms-partition.h"
 #include "partition-dangle.h"
+#include "random-sample.h"
 #include "constraints.h"
 #include "traceback.h"
 #include "subopt_traceback.h"
@@ -287,8 +288,17 @@ int main(int argc, char** argv) {
 	}
 
 	if(BPPD_ENABLED){
+		int rand_seq[seq.length() + 1];
+
 		dangle_struct dstruct = malloc_partition_arrays_d(seq.length());
 		fill_partition_arrays_d(dstruct);	
+		sample_structure(rand_seq, dstruct); 
+		
+		for(int i=1; i <= seq.length(); i++){
+			printf("%d ", rand_seq[i]);
+		}
+		printf("\n");
+
 		free_partition_arrays_d(dstruct);
 	}
 

@@ -84,10 +84,10 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 	int len = part_struct.length;
 
 	int seg_length;
-	int i,j,l;
+	volatile int i,j,l;
 	double second_half; //used to calculate conditional terms
 
-	for(seg_length = MIN_TURN; seg_length <= len; len++){
+	for(seg_length = MIN_TURN; seg_length <= len; seg_length++){
 		//Insert parallelism here.
 		for(i = 1; i < len - seg_length; i++){
 			j = i + seg_length - 1;
@@ -248,9 +248,13 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 				u[i][j] += up[l][j] * 
 						exp(-(Ed5(l, j , l - 1) + auPenalty(h,j))/RT);
 
-				u[i][j] += exp(-(auPenalty(i,l))/RT)*
-					(exp(-Ed3(i,l,l + 1)/RT) * u[l + 2][j] +
-					   u[l + 1][j] - u[l + 2][j]);
+				if(l + 2 < j){
+					second_half = (exp(-Ed3(i,l,l + 1)/RT) * 
+						u[l + 2][j] +
+						u[l + 1][j] - 
+						u[l + 2][j]);
+				}
+				u[i][j] += exp(-(auPenalty(i,l))/RT)*second_half;
 
 				if(l != j - 1) {
 					u[i][j] += partial_external[l][j];
