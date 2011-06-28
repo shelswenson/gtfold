@@ -37,7 +37,7 @@ void initializeMatrix(int len) {
 
 	for (i = 1; i <= len; ++i) 
 		for (j = len; j >= i; --j) 
-			if (canPair(RNA[i],RNA[j]) && j-i >= TURN) 
+			if (canPair(RNA[i],RNA[j]) && j-i > TURN) 
 				PP[i][j]  = 1;
 }
 
@@ -120,10 +120,10 @@ int calcVBI2(int i, int j, int  len) {
 	return energy;
 }
 
-int calculate(int len, int nThreads, int t_mismatch) { 
+int calculate(int len) { //, int nThreads, int unamode, int mismatch) { 
 	int b, i, j;
 #ifdef _OPENMP
-	if (nThreads>0) omp_set_num_threads(nThreads);
+	if (g_nthreads > 0) omp_set_num_threads(g_nthreads);
 #endif
 #ifdef _OPENMP
 #pragma omp parallel
@@ -132,8 +132,8 @@ int calculate(int len, int nThreads, int t_mismatch) {
 #endif
 
 	initializeMatrix(len);
-	if (t_mismatch) {
-		prefilter(len,2,2);
+	if (g_unamode || g_prefilter_mode) {
+		prefilter(len,g_prefilter1,g_prefilter2);
 	}
 
 	for (b = TURN+1; b <= len-1; b++) {
@@ -149,7 +149,7 @@ int calculate(int len, int nThreads, int t_mismatch) {
 				int es = canStack(i,j)?eS(i,j)+V(i+1,j-1):INFINITY_; // stack
 
 				// Internal Loop BEGIN
-				if (t_mismatch) 
+				if (g_unamode) 
 					VBI(i,j) = calcVBI1(i,j);
 				else
 					VBI(i,j) = calcVBI(i,j);
@@ -166,7 +166,7 @@ int calculate(int len, int nThreads, int t_mismatch) {
 				VMij = MIN(VMij, (VMidj + d5 +Ec)) ;
 				VMij = MIN(VMij, (VMijd + d3 +Ec));
 
-				if (t_mismatch) {
+				if (g_unamode || g_mismatch) {
 					VMij = MIN(VMij, (VMidjd + Estackm(i,j) + 2*Ec));
 				} else {
 					VMij = MIN(VMij, (VMidjd + d5 + d3+ 2*Ec));
@@ -195,7 +195,7 @@ int calculate(int len, int nThreads, int t_mismatch) {
 			newWM = canSS(i)?MIN(V(i+1,j) + Ed3(j,i+1,i) + auPenalty(i+1,j) + Eb + Ec, newWM):newWM; //i dangle
 			newWM = canSS(j)?MIN(V(i,j-1) + Ed5(j-1,i,j) + auPenalty(i,j-1) + Eb + Ec, newWM):newWM;  //j dangle
 
-			if (t_mismatch) {
+			if (g_unamode || g_mismatch) {
 				if (i<j-TURN-2)
 					newWM = (canSS(i)&&canSS(j))?MIN(V(i+1,j-1) + Estackm(j-1,i+1) + auPenalty(i+1,j-1) + Eb + 2*Ec, newWM):newWM; 
 			}
@@ -217,7 +217,7 @@ int calculate(int len, int nThreads, int t_mismatch) {
 			Wim1 = MIN(0, W[i-1]); 
 			Wij = V(i, j) + auPenalty(i, j) + Wim1;
 		
-			if (t_mismatch) {
+			if (g_unamode || g_mismatch) {
 				Widjd = (canSS(i)&&canSS(j))?V(i+1,j-1) + auPenalty(i+1,j-1) + Estacke(j-1,i+1) + Wim1:Widjd;
 			} else {
 				Widjd = (canSS(i)&&canSS(j))?V(i+1,j-1) + auPenalty(i+1,j-1) + Ed3(j-1,i + 1,i) + Ed5(j-1,i+1,j) + Wim1:Widjd;

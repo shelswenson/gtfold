@@ -21,15 +21,23 @@ extern bool VERBOSE;
 extern bool SHAPE_ENABLED;
 extern bool PARAM_DIR;
 extern bool T_MISMATCH;
+extern bool UNAMODE;
+extern bool RNAMODE;
 
 extern string seqfile;
 extern string constraintsFile;
 extern string shapeFile;
+extern string outputDir;
 extern string outputFile;
+extern string bppOutFile;
+extern string suboptFile;
 extern string paramDir;
 
-extern int suboptDelta;
+extern float suboptDelta;
 extern int nThreads;
+extern bool b_prefilter;
+extern int prefilter1;
+extern int prefilter2;
 
 extern bool LIMIT_DISTANCE;
 extern int contactDistance;

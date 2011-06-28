@@ -71,7 +71,14 @@ void init_fold(string seq) {
 	if (SHAPE_ENABLED) {
 		readSHAPEarray(shapeFile.c_str(),len);
 	}
-
+	
+	g_nthreads = nThreads;
+	g_unamode  = UNAMODE;
+	g_mismatch = T_MISMATCH;
+	g_verbose  = VERBOSE;
+	g_prefilter_mode  = b_prefilter;
+	g_prefilter1  = prefilter1;
+	g_prefilter2  = prefilter2;
 }
 
 void free_fold(int len) {
@@ -166,19 +173,33 @@ void print_header() {
 	printf("Georgia Institute of Technology\n\n");
 }
 
+void save_subopt_file(string outputFile, ss_map_t& ss_data, 
+		const string& seq, int energy)
+{
+	ofstream outfile;
+	outfile.open(outputFile.c_str());
+	char buff[1024];
+
+	sprintf(buff,"%s\t%0.2f", seq.c_str(), energy/100.0);
+	outfile << buff << std::endl;
+	for (ss_map_t::iterator it = ss_data.begin(); it!= ss_data.end(); ++it) 
+	{
+		sprintf(buff,"%s %0.2f", (it->first).c_str(), it->second/100.0);
+		//outfile << it->first << '\t' << it->second/100.0 << std::endl;
+		outfile << buff << std::endl;
+	}
+
+	outfile.close();
+}
+
 /**
  * Save the output to a ct file
  *
  * @param outputFile The file to save to
  * @param energy The MFE energy (multiplied by 100)
  */
-void save_ct_file(string outputFile, string seq, int energy, string seqfile) {
-	if(seqfile.find("/") != string::npos) {
-		size_t pos = seqfile.find_last_of("/");
-		seqfile.erase(0,pos+1);
-	}
-	if(seqfile.find(".") != string::npos)
-		seqfile.erase(seqfile.rfind("."));
+void save_ct_file(string outputFile, string seq, int energy) {
+
 	ofstream outfile;
 	outfile.open(outputFile.c_str());
 
@@ -206,10 +227,11 @@ int main(int argc, char** argv) {
 		exit(-1);
 	}
 	
-	// Read in thermodynamic parameters. Always use Turner99 data (for now)
-	readThermodynamicParameters(paramDir.c_str(), PARAM_DIR, T_MISMATCH);
-
 	printRunConfiguration(seq);
+	
+	// Read in thermodynamic parameters. Always use Turner99 data (for now)
+	readThermodynamicParameters(paramDir.c_str(), PARAM_DIR, UNAMODE, RNAMODE, T_MISMATCH);
+
 	
 	init_fold(seq);
 
@@ -217,41 +239,45 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 
 	t1 = get_seconds();
-	energy = calculate(seq.length(), nThreads, T_MISMATCH);
+	energy = calculate(seq.length()) ; //, nThreads, UNAMODE, T_MISMATCH);
 	t1 = get_seconds() - t1;
 	
 	printf("Done.\n\n");
 	printf("Results:\n");
-	printf("- Minimum Free Energy: %12.4f kcal/mol\n", energy/100.00);
+	if (energy >= MAXENG)	
+		printf("- Minimum Free Energy: %12.4f kcal/mol\n", 0.00);
+	else
+		printf("- Minimum Free Energy: %12.4f kcal/mol\n", energy/100.00);
 	printf("- MFE runtime: %9.6f seconds\n", t1);
-	
-	
+
+
 	if (SUBOPT_ENABLED) {	
 		t1 = get_seconds();
-		subopt_traceback(seq.length(), suboptDelta);
+		ss_map_t subopt_data = subopt_traceback(seq.length(), 100.0*suboptDelta);
 		t1 = get_seconds() - t1;
-		printf("Subopt traceback running time: %9.6f seconds\n\n", t1);
-
+		printf("\n");
+		printf("Subopt traceback running time: %9.6f seconds\n", t1);
+		
+		printf("Subopt structures saved in %s\n", suboptFile.c_str());
+		save_subopt_file(suboptFile, subopt_data, seq, energy);	
 		free_fold(seq.length());
 		exit(0);
 	}
 	
 	t1 = get_seconds();
-	trace(seq.length(), VERBOSE, T_MISMATCH);
+	trace(seq.length(), VERBOSE, UNAMODE, T_MISMATCH);
 	t1 = get_seconds() - t1;
-
+	
 	printf("\n");
 	print_sequence(seq.length());
 	print_structure(seq.length());
 	if (CONS_ENABLED)
 		print_constraints(seq.length());
 
-
 	if (SHAPE_ENABLED && VERBOSE)
 		print_shapeArray(seq.length());
-	
 
-	save_ct_file(outputFile, seq, energy,seqfile);
+	save_ct_file(outputFile, seq, energy);
 	printf("\nMFE structure saved in .ct format to %s\n", outputFile.c_str());
 
 
@@ -269,6 +295,7 @@ int main(int argc, char** argv) {
 	}
 
 	if(BPP_ENABLED){
+		printf("\n");
 		printf("Calculating partition function\n");
 		double ** Q,  **QM, **QB, **P;
 		Q = mallocTwoD(seq.length() + 1, seq.length() + 1);
@@ -279,7 +306,8 @@ int main(int argc, char** argv) {
 	
 		fill_partition_fn_arrays(seq.length(), Q, QB, QM);
 		fillBasePairProbabilities(seq.length(), Q, QB, QM, P);
-		printBasePairProbabilities(seq.length(), structure, P);
+		printBasePairProbabilities(seq.length(), structure, P, bppOutFile.c_str());
+		printf("Saved BPP output in %s\n",bppOutFile.c_str());
 
 		freeTwoD(Q, seq.length() + 1, seq.length() + 1);
 		freeTwoD(QM, seq.length() + 1, seq.length() + 1);
