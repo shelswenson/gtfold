@@ -91,7 +91,7 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 	for(seg_length = MIN_TURN; seg_length <= len; seg_length++){
 		printf("Length %d\n", seg_length);
 		//Insert parallelism here.
-		for(i = 1; i < len - seg_length; i++){
+		for(i = 1; i <= len - seg_length + 1; i++){
 			j = i + seg_length - 1;
 
 			if(canPair(RNA[i],RNA[j])){
@@ -283,6 +283,7 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 					u[i][j] += partial_external[l][j];
 				}
 			}
+			printf("Partition for u[%d][%d] %f\n", i, j, u[i][j]);
 		}//end of minor (paralellizeable) for loop
 	}//End of major for loop
 	printf("Total partition function: %f \n", u[1][len]);
