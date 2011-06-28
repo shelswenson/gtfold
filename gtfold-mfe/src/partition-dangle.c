@@ -96,43 +96,48 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 
 			if(canPair(RNA[i],RNA[j])){
 				for(l = i+2; l < j; l++){
+
+					double temp_term = up[i+1][l] * 
+								exp(-(Ea + 2 * Ec + auPenalty(i + 1,l)/RT));
 					if(l + 2 < j)
 					{
-						second_half = (exp(-Ed3(i + 1,l,l+1)/RT) * 
+						temp_term *= (exp(-Ed3(i + 1,l,l+1)/RT) * 
 									u_multi[l + 2][j - 1] + 
 									u_multi[l + 1][j - 1] -
 									u_multi[l + 2][j - 1]);
 					}
-					else
-					{
-						second_half = 1;
-					}
-					upm[i][j] += up[i+1][l] * 
-								exp(-(Ea + 2 * Ec + auPenalty(i + 1,l)/RT)) *
-								second_half;
+					upm[i][j] += temp_term; 
+
 					if(l != i+2){ //goes from i + 2 < l < j
+						temp_term = up[i + 2][l] * 
+								exp(-(Ea + 2 * Ec + Eb + Ed3(j,i,i + 1) + 
+								auPenalty(i + 2, l))/RT);
+
 						if(l + 2 < j - 1){
-							second_half = (exp(-Ed3(i + 2,l,l + 1)/RT)*
+							temp_term *= (exp(-Ed3(i + 2,l,l + 1)/RT)*
 									u_multi[l + 2][j - 1] + 
 									u_multi[l + 1][j - 1]  - 
 									u_multi[l + 2][j - 1]);
 						}
-						else
-						{
-							second_half = 1;
-						}
+					if(temp_term < -0.01){
+						printf("Second temp_term is negative\n");
+						exit(-1);
+					}
 
-						upm[i][j] += up[i + 2][l] * 
-								exp(-(Ea + 2 * Ec + Eb + Ed3(j,i,i + 1) + 
-									auPenalty(i + 2, l))/RT) *
-									second_half;
+						upm[i][j] += temp_term; 
 
 						if(l != j - 1){
 							//Changed h in the paper to l it makes no difference
 							//other than unifying loops
-							upm[i][j] += exp(-Ed3(j,i,i + 1)/RT)*
+							temp_term = exp(-Ed3(j,i,i + 1)/RT)*
 									exp(-(Ea + 2 * Ec + (l - i - 1) * Eb)/RT) * 
-									partial_multi[l][j]; 
+									partial_multi[l][j];
+
+					if(temp_term < -0.01){
+						printf("Third temp_term is negative\n");
+						exit(-1);
+					}
+							upm[i][j] += temp_term;  
 
 						}
 					}
@@ -165,84 +170,92 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 			}//End checkpair conditional
 
 			for(l = i + 1; l <= j ; l++){
+				double temp_term = up[i][l] * exp(-(Ec + auPenalty(i,l))/RT); 
 				if(l + 2 < j)
 				{
-					second_half = (cond_dangle(j + 1,i,l) * 
+					temp_term *= (cond_dangle(j + 1,i,l) * 
 							exp(-(j - l) * Eb/RT) + 
 							exp(-Ed3(i,l,l + 1)/RT) * u_multi[l + 2][j] + 
 							u_multi[l + 1][j] -
 							u_multi[l + 2][j]);
 				}
-				else
-				{
-					second_half = 1;
+
+				u_multi[i][j] += temp_term;
+
+				if(temp_term < 0){
+					printf("First temp_term in u_multi[%d][%d] is negative: %f\n",
+							i,j,temp_term);
+					exit(-1);
 				}
 
-				u_multi[i][j] += up[i][l] * exp(-(Ec + auPenalty(i,l))/RT) *
-								second_half;
 				if(l != i+1){ //this term runs from i + 2 to j	
+					temp_term = up[i + 1][l]*
+							exp(-(Ec + Eb + auPenalty(i + 1,l))/RT);
 					if(l + 2 < j)
 					{
-						second_half = (cond_dangle(j + 1, i + 1, l) * 
+						temp_term *= (cond_dangle(j + 1, i + 1, l) * 
 								exp(-(j - l)*Eb/RT) + 
 								exp(-Ed3(i + 1,l,l + 1)/RT) * u_multi[l + 2][j] + 
 								u_multi[l + 1][j] - 
 								u_multi[l + 2][j]);
 					}
-					else
-					{
-						second_half = 1;
-					}
-					u_multi[i][j] += up[i + 1][j]*
-							exp(-(Ec + Eb + auPenalty(i + 1,l))/RT)*
-							second_half;
+					u_multi[i][j] += temp_term;
 
-					if(l != j){
+					if(temp_term < 0){
+						printf("Second temp_term in u_multi[%d][%d] is negative: %f\n",
+						i,j,temp_term);
+						exit(-1);
+					}
+
+					if(l != j){ //The third summation only runs from i+2 to j-1
 						u_multi[i][j] += exp(-(Ec + (l - i) * Eb)/RT) * 
 										partial_multi2[l][j];
 
 					}
 				}
 			}
+			if(u_multi[i][j] < 0){
+				printf("u_multi[%d][%d] is %f\n", i, j, u_multi[i][j]);
+				exit(-1);
+			}
 
 
 			int h = i; //To stay consistant with the notation in the paper.
 
 			for(l = h+1; l < j; l++){
-				double second_half_ext, second_half_mul, second_half_mul2;
+				double temp_ext, temp_mul, temp_mul2;
+				temp_ext = up[h][l] * 
+							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT);
+
+				temp_mul = up[h][l] * 
+							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT);
+
+				temp_mul2 = up[h][l] * 
+							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT);
+
 				if(l + 2 < j){
-					second_half_ext = 
-							(exp(-Ed3(h,l,l + 1)/RT)*u[l + 2][j - 1] + 
+					temp_ext *= 
+							(exp(-Ed3(h,l,l + 1)/RT)*u[l + 2][j] + 
 								u[l + 1][j] -
 								u[l + 2][j]);
 
-					second_half_mul = 
+					temp_mul *= 
 							(exp(-Ed3(h,l,l + 1)/RT)*u_multi[l + 2][j - 1] + 
 								u_multi[l + 1][j - 1] -
 								u_multi[l + 2][j - 1]);
 
-					second_half_mul2 =
+					temp_mul2 *=
 							(cond_dangle(j + 1, h, l)*exp(-(j - l) * Eb / RT) + 
 							exp(-Ed3(h,l,l + 1)/RT)*u_multi[l + 2][j] + 
 								u_multi[l + 1][j] - 
 								u_multi[l + 2][j]);
 				}
-				else
-				{
-					second_half_ext = second_half_mul = second_half_mul2 = 1;
-				}
 				
-				partial_external[h][j] += up[h][l] * 
-							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT) *
-							second_half_ext;
+				partial_external[h][j] += temp_ext;
 
-				partial_multi[h][j] += up[h][l] * 
-							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT) *
-							second_half_mul;
+				partial_multi[h][j] += temp_mul;
 
-				partial_multi2[h][j] += up[h][l] * 
-							exp( -(Ed5(h,l,h - 1) + auPenalty(h,l)) / RT) *
-							second_half_mul2;
+				partial_multi2[h][j] += temp_mul2;
 							
 			}
 			/** partial_multi2 goes up to j **/
