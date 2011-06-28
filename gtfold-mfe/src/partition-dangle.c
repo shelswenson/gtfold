@@ -89,7 +89,6 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 	double second_half = 1; //used to calculate conditional terms
 
 	for(seg_length = MIN_TURN; seg_length <= len; seg_length++){
-		printf("Length %d\n", seg_length);
 		//Insert parallelism here.
 		for(i = 1; i <= len - seg_length + 1; i++){
 			j = i + seg_length - 1;
@@ -164,9 +163,6 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 						}
 					}
 				}
-				if(up[i][j] < 0){
-					printf("What the hell?! why is up[%d][%d] negative? %f\n", i,j,up[i][j]);
-				}
 			}//End checkpair conditional
 
 			for(l = i + 1; l <= j ; l++){
@@ -182,11 +178,6 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 
 				u_multi[i][j] += temp_term;
 
-				if(temp_term < 0){
-					printf("First temp_term in u_multi[%d][%d] is negative: %f\n",
-							i,j,temp_term);
-					exit(-1);
-				}
 
 				if(l != i+1){ //this term runs from i + 2 to j	
 					temp_term = up[i + 1][l]*
@@ -201,11 +192,6 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 					}
 					u_multi[i][j] += temp_term;
 
-					if(temp_term < 0){
-						printf("Second temp_term in u_multi[%d][%d] is negative: %f\n",
-						i,j,temp_term);
-						exit(-1);
-					}
 
 					if(l != j){ //The third summation only runs from i+2 to j-1
 						u_multi[i][j] += exp(-(Ec + (l - i) * Eb)/RT) * 
@@ -213,10 +199,6 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 
 					}
 				}
-			}
-			if(u_multi[i][j] < 0){
-				printf("u_multi[%d][%d] is %f\n", i, j, u_multi[i][j]);
-				exit(-1);
 			}
 
 
@@ -283,7 +265,6 @@ void fill_partition_arrays_d(dangle_struct part_struct){
 					u[i][j] += partial_external[l][j];
 				}
 			}
-			printf("Partition for u[%d][%d] %f\n", i, j, u[i][j]);
 		}//end of minor (paralellizeable) for loop
 	}//End of major for loop
 	printf("Total partition function: %f \n", u[1][len]);
